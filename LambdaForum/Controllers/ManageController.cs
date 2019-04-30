@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using LambdaForum.Models;
 using LambdaForum.Models.ManageViewModels;
 using LambdaForum.Services;
+using LambdaForum.Data.Models;
 
 namespace LambdaForum.Controllers
 {
