@@ -1,0 +1,31 @@
+﻿@model LambdaForum.Models.Post.PostIndexModel;
+
+
+<h1>@Model.Title</h1>
+
+<div>
+    Author: @Model.AuthorName (@Model.AuthorRating)
+    Created: @Model.Created
+</div>
+
+<div>
+    @Model.PostContent
+</div>
+
+@if (Model.PostReplies.Any())
+{
+    @foreach(var reply in Model.PostReplies)
+    {
+<div>
+    <div>
+        Reply Author: @reply.AuthorName (@reply.AuthorRating)
+        Reply Created: @reply.Created
+    </div>
+
+    <div>
+         Reply: @reply.ReplyContent 
+    </div>
+</div>
+    }
+}
+
