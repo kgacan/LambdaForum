@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LambdaForum.Data;
+using LambdaForum.Data.Models;
 using LambdaForum.Models.Post;
 using LambdaForum.Models.Reply;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LambdaForum.Controllers
@@ -12,9 +14,14 @@ namespace LambdaForum.Controllers
     public class PostController : Controller
     {
         private readonly IPost _servicePost;
-        public PostController(IPost servicePost)
+        private readonly IForum _serviceForum;
+        private static UserManager<ApplicationUser> _userManager; 
+        public PostController(IPost servicePost, IForum serviceForum, UserManager<ApplicationUser> userManager)
         {
             _servicePost = servicePost;
+            _serviceForum = serviceForum;
+            _userManager = userManager;
+
         }
         public IActionResult Index(int id)
         {
@@ -43,6 +50,52 @@ namespace LambdaForum.Controllers
                 })
             };
             return View(model);
+        }
+
+        public IActionResult Create(int id)
+        {
+            //id is Forum Id
+
+            var forum = _serviceForum.GetById(id);
+
+            var model = new NewPostModel
+            {
+                ForumId = forum.Id,
+                ForumImageUrl = forum.ImageUrl,
+                ForumName = forum.Title,
+                AuthorName = User.Identity.Name,
+
+            };
+
+          return View(model);
+        }
+
+       [HttpPost]
+       public async Task<IActionResult> AddPost(NewPostModel model)
+        {
+            var userId = _userManager.GetUserId(User);
+            var user = _userManager.FindByIdAsync(userId).Result;
+            var post = BuildPost(model, user);
+
+            await _servicePost.Add(post);
+
+            return RedirectToAction(nameof(Index), new { id = post.Id });
+
+        }
+
+        private Post BuildPost(NewPostModel model, ApplicationUser user)
+        {
+            var forum = _serviceForum.GetById(model.ForumId);
+
+            var post = new Post
+            {
+                Content = model.Content,
+                Created = DateTime.Now,
+                User = user,
+                Title = model.Title,
+                Forum = forum
+            };
+            return post;
         }
     }
 }
